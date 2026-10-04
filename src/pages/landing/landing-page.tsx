@@ -1,7 +1,8 @@
 import { Link } from "react-router";
-import { Check, CalendarDays } from "lucide-react";
+import { Check, CalendarDays, ArrowRight, Lightbulb, Users } from "lucide-react";
 import { Button } from "~/lib/components/ui/button";
 import { Input } from "~/lib/components/ui/input";
+import { Checkbox } from "~/lib/components/ui/checkbox";
 
 function BrandMark({ className }: { className?: string }) {
   return (
@@ -25,6 +26,124 @@ function formatDate(year: number, month: number, day: number): string {
     "July", "August", "September", "October", "November", "December",
   ];
   return `${weekdays[date.getUTCDay()]}, ${months[date.getUTCMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}`;
+}
+
+function FeatureTile({
+  icon: Icon,
+  title,
+  body,
+}: {
+  icon: typeof Lightbulb;
+  title: string;
+  body: string;
+}) {
+  return (
+    <div className="group relative overflow-hidden rounded-10 border border-separator bg-surface p-5">
+      <div className="absolute inset-x-0 top-0 h-1 bg-accent/70" />
+      <div className="relative">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent-fill/10 text-accent">
+          <Icon className="h-5 w-5" aria-hidden="true" />
+        </div>
+        <h3 className="mt-4 font-display text-base font-semibold tracking-tight">
+          {title}
+        </h3>
+        <p className="mt-1.5 text-sm leading-relaxed text-label-secondary">
+          {body}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function AppPreview() {
+  const now = new Date();
+  const today = formatDate(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate()
+  );
+
+  return (
+    <section className="rounded-10 border border-separator bg-surface p-5">
+      <div className="flex items-center justify-between">
+        <p className="font-display text-lg font-semibold tracking-tight">
+          Your list
+        </p>
+        <p className="text-xs text-label-tertiary">{today}</p>
+      </div>
+
+      <form
+        onSubmit={(event) => event.preventDefault()}
+        className="mt-4 flex items-center gap-2 rounded-md border border-separator bg-bg p-3"
+      >
+        <Input
+          placeholder="Add a task…"
+          className="h-10 flex-1 bg-transparent px-0 text-sm"
+        />
+        <Button type="submit" size="sm" className="shrink-0">
+          Add
+        </Button>
+      </form>
+
+      <div className="mt-3 flex gap-1.5">
+        <Button
+          variant="primary"
+          size="sm"
+          className="rounded-10 bg-accent-fill px-3 py-2 text-xs font-medium"
+        >
+          All
+        </Button>
+        <Button
+          variant="secondary"
+          size="sm"
+          className="rounded-10 bg-surface px-3 py-2 text-xs font-medium"
+        >
+          Active
+        </Button>
+        <Button
+          variant="secondary"
+          size="sm"
+          className="rounded-10 bg-surface px-3 py-2 text-xs font-medium"
+        >
+          Done
+        </Button>
+      </div>
+
+      <ul className="mt-3 space-y-0">
+        {[
+          { title: "Send the quarterly recap", due: "Today" },
+          { title: "Book the dentist appointment", due: "Tomorrow" },
+          { title: "Draft Q4 goals", due: "Today" },
+        ].map((item, index) => (
+          <li key={item.title} className="flex items-start gap-3 py-2">
+            <span
+              className={
+                index === 1
+                  ? "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-accent-fill text-on-accent"
+                  : "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-2 border-separator bg-surface"
+              }
+            >
+              {index === 1 && (
+                <Check className="h-3 w-3" strokeWidth={3} aria-hidden="true" />
+              )}
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm leading-6 text-label">{item.title}</p>
+              <p className="mt-0.5 flex items-center gap-1 text-xs text-label-tertiary">
+                <CalendarDays className="h-3.5 w-3.5" aria-hidden="true" />
+                Due {item.due}
+              </p>
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      <div className="mt-4 flex items-center gap-2 text-xs text-label-tertiary">
+        <span className="h-2 w-2 rounded-full bg-accent/70" />
+        Live · three tasks · synced to your account
+      </div>
+    </section>
+  );
 }
 
 export function LandingPage() {
@@ -71,7 +190,7 @@ export function LandingPage() {
           <h1 className="mt-4 font-display text-3xl font-semibold tracking-tight text-label">
             One list, ordered so the next thing is always on top.
           </h1>
-          <p className="mt-3 text-sm leading-relaxed text-label-tertiary">
+          <p className="mt-3 text-sm leading-relaxed text-label-secondary">
             Tally ranks your list by what&apos;s due, protects every delete with
             five seconds of undo, and keeps each task locked to your account on
             the server.
@@ -104,107 +223,27 @@ export function LandingPage() {
           <h2 className="font-display text-2xl font-semibold tracking-tight">
             How Tally stays out of your way
           </h2>
-          <div className="mt-6 space-y-4">
-            {[
-              {
-                title: "One list, ordered by what's due",
-                body: "Unfinished tasks rise to the top. Earliest due dates come next, and new items never bury older ones.",
-              },
-              {
-                title: "Five seconds of grace",
-                body: "Deleted the wrong row? The undo banner gives you a full five seconds to put it back, exactly where it was.",
-              },
-              {
-                title: "Locked to you",
-                body: "Every read and write is checked against your account on the server, so nobody else can see, edit, or delete a single task.",
-              },
-            ].map(({ title, body }) => (
-              <div key={title} className="flex gap-3">
-                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-separator bg-surface">
-                  <Check className="h-3 w-3 text-accent" aria-hidden="true" />
-                </div>
-                <div>
-                  <h3 className="font-display text-base font-semibold">{title}</h3>
-                  <p className="mt-0.5 text-sm text-label-tertiary">{body}</p>
-                </div>
-              </div>
-            ))}
+          <div className="mt-6 grid gap-4 sm:grid-cols-3">
+            <FeatureTile
+              icon={Lightbulb}
+              title="One list, ordered by what&apos;s due"
+              body="Unfinished tasks rise to the top. Earliest due dates come next, and new items never bury older ones."
+            />
+            <FeatureTile
+              icon={Check}
+              title="Five seconds of grace"
+              body="Deleted the wrong row? The undo banner gives you a full five seconds to put it back, exactly where it was."
+            />
+            <FeatureTile
+              icon={Users}
+              title="Locked to you"
+              body="Every read and write is checked against your account on the server, so nobody else can see, edit, or delete a single task."
+            />
           </div>
         </section>
 
         <section className="border-b border-separator pb-10">
-          <div className="rounded-10 border border-separator bg-surface p-5">
-            <div className="flex items-center justify-between">
-              <p className="font-display text-lg font-semibold">Your list</p>
-              <p className="text-xs text-label-tertiary">{todayString}</p>
-            </div>
-
-            <form
-              onSubmit={(event) => event.preventDefault()}
-              className="mt-4 flex items-center gap-2 rounded-md border border-separator bg-bg px-3 py-2"
-            >
-              <Input
-                placeholder="Add a task…"
-                className="h-9 rounded-10 bg-transparent px-0 text-sm"
-              />
-              <Button type="submit" size="sm">
-                Add
-              </Button>
-            </form>
-
-            <div className="mt-3 flex gap-1.5">
-              <Button
-                variant="primary"
-                size="sm"
-                className="rounded-10 bg-accent-fill text-on-accent px-3 py-2 text-xs font-medium"
-              >
-                All
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                className="rounded-10 bg-surface px-3 py-2 text-xs font-medium"
-              >
-                Active
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                className="rounded-10 bg-surface px-3 py-2 text-xs font-medium"
-              >
-                Done
-              </Button>
-            </div>
-
-            <ul className="mt-3 space-y-0">
-              {[
-                "Send the quarterly recap",
-                "Book the dentist appointment",
-                "Draft Q4 goals",
-              ].map((title, index) => (
-                <li key={title} className="flex items-start gap-3 py-2">
-                  <span
-                    className={
-                      index === 1
-                        ? "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-accent-fill text-on-accent"
-                        : "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-2 border-separator bg-surface"
-                    }
-                  >
-                    {index === 1 && (
-                      <Check className="h-3 w-3" strokeWidth={3} aria-hidden="true" />
-                    )}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm leading-6 text-label">{title}</p>
-                    <p className="mt-0.5 flex items-center gap-1 text-xs text-label-tertiary">
-                      <CalendarDays className="h-3.5 w-3.5" aria-hidden="true" />
-                      Due {index === 2 ? "Tomorrow" : "Today"}
-                    </p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <AppPreview />
         </section>
 
         <section className="border-b border-separator pb-10">
@@ -213,12 +252,15 @@ export function LandingPage() {
               <h2 className="font-display text-2xl font-semibold tracking-tight">
                 Sign in. Pick up exactly where you left off.
               </h2>
-              <p className="mt-2 text-sm text-label-tertiary">
+              <p className="mt-2 text-sm leading-relaxed text-label-secondary">
                 One account. One list. No settings to wander through.
               </p>
             </div>
             <Button size="lg" asChild>
-              <Link to="/auth?action=signup">Create your account</Link>
+              <Link to="/auth?action=signup">
+                Create your account
+                <ArrowRight className="ml-1.5 h-4 w-4" aria-hidden="true" />
+              </Link>
             </Button>
           </div>
         </section>
