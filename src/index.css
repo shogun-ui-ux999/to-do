@@ -1,62 +1,56 @@
-@import "tailwindcss";
-
 /* ==========================================================================
- * Tally — editorial task journal
+ * Tally — Apple-grade reskin
  *
- * A beautifully printed daily journal, not a SaaS dashboard. Token priorities:
+ * Black-forward, restrained, blue-accent-only. No warm tones, no serif
+ * display type, no heavy shadows, no cards everywhere. Depth comes from
+ * surface lightness, separators, and blur.
  *
- *   1. Warm paper background, ink-dark text, one confident accent (vermilion).
- *   2. Large serif display headings, quiet grotesque UI.
- *   3. Thin hairline rules, not boxes. Depth is a hairline + a soft surface
- *      shift, never a shadow.
- *   4. Nothing moves under the user; motion only explains reactions.
+ * Every color below is a semantic token exposed to Tailwind via @theme.
+ * The [data-theme] attribute on <html> (set before first paint by the
+ * inline script in index.html) flips the whole palette for dark mode.
  * ========================================================================== */
 
+@import "tailwindcss";
+
 @theme {
-  /* ------------------------------------------------------------------ *
-   * Surfaces + text: warm paper and ink.                                *
-   * ------------------------------------------------------------------ */
-  --color-bg: #f4f0e8;
-  --color-surface: #fbf9f4;
-  --color-surface-2: #f4efe6;
-  --color-text: #222520;
-  /* Muted captions. Near-black ink, so captions clear 4.5:1 on both the
-   * warm paper background and the surface cards. */
-  --color-muted: #4b4e47;
-  --color-border: #d8d2c6;
+  /* ---- Light (default) ---- */
+  --color-bg: #ffffff;
+  --color-surface: #f2f2f7;
+  --color-surface-2: #e5e5ea;
+  --color-surface-3: #ffffff; /* selected segment */
+  --color-label: #000000;
+  --color-label-secondary: rgba(60, 60, 67, 0.75);
+  --color-label-tertiary: rgba(60, 60, 67, 0.3); /* disabled/decorative */
+  --color-placeholder: rgba(60, 60, 67, 0.75); /* input placeholders */
+  --color-separator: rgba(60, 60, 67, 0.29);
+  --color-accent: #0062cc; /* text, icons, focus rings */
+  --color-accent-fill: #0062cc; /* solid fills behind white labels */
+  --color-accent-hover: #0066cc;
+  --color-on-accent: #ffffff;
+  --color-danger: #d70015;
+  --color-danger-hover: #d92217;
+  --color-on-danger: #ffffff;
+  --color-success: #1e7a33;
+  --color-on-success: #ffffff;
 
-  /* Accent: vermilion — primary action, focus rings, active filter only. */
-  /* Darkened so it clears 4.5:1 for both the ink button text and the
-   * background it sits on (the add-field rule in the hero). */
-  --color-accent: #c82d1a;
-  --color-accent-hover: #a82513;
-  --color-on-accent: #fbf6ef;
-
-  /* ------------------------------------------------------------------ *
-   * Typefaces.                                                           *
-   * ------------------------------------------------------------------ */
+  /* ---- Type & shape ---- */
   --font-sans:
-    instrument-sans, ui-sans-serif, system-ui, -apple-system, "Segoe UI",
-    Roboto, "Helvetica Neue", Arial, sans-serif;
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI",
+    system-ui, Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-display:
-    newsreader, ibis serif, "Source Serif 4", Georgia, Cambria,
-    "Times New Roman", serif;
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI",
+    system-ui, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --radius-10: 10px;
+  --shadow-10: 0 10px 32px -14px rgb(0 0 0 / 0.4);
 
-  /* ------------------------------------------------------------------ *
-   * Motion.                                                              *
-   * ------------------------------------------------------------------ */
-  --velocity-ease: cubic-bezier(0.2, 0, 0, 1);
-  --paper-ease: cubic-bezier(0.22, 1, 0.36, 1);
-
-  --duration-fast: 110ms;
-  --duration-normal: 170ms;
-  --duration-entrance: 200ms;
-
-  --animate-fade: fade 120ms var(--velocity-ease) both;
-  --animate-expand: expand 220ms var(--paper-ease) both;
-  --animate-undo: slide-up 260ms var(--paper-ease) both;
-  --animate-restore: re-enter 200ms var(--velocity-ease) both;
-  --animate-tab: tab-switch 180ms ease both;
+  /* ---- Motion ---- */
+  --ease-spring: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --animate-fade: fade 140ms var(--ease-spring) both;
+  --animate-expand: expand 260ms var(--ease-spring) both;
+  --animate-undo: fade-collapse 260ms var(--ease-spring) both;
+  --animate-re-enter: re-enter 220ms var(--ease-spring) both;
+  --animate-tab: tab-switch 200ms var(--ease-spring) both;
+  --animate-check: check 220ms var(--ease-spring) both;
 
   @keyframes fade {
     from { opacity: 0; }
@@ -66,7 +60,7 @@
   @keyframes expand {
     from {
       opacity: 0;
-      transform: translateY(9px) scale(0.985);
+      transform: translateY(8px) scale(0.97);
     }
     to {
       opacity: 1;
@@ -74,61 +68,64 @@
     }
   }
 
-  @keyframes slide-up {
-    from {
-      opacity: 0;
-      transform: translateY(12px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+  @keyframes fade-collapse {
+    from { opacity: 1; }
+    to { opacity: 0; }
   }
 
   @keyframes re-enter {
     from {
       opacity: 0;
-      transform: translateX(6px);
+      transform: translateX(-6px);
     }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
+    to { opacity: 1; transform: translateX(0); }
   }
 
   @keyframes tab-switch {
-    from {
-      opacity: 0.5;
-      transform: translateY(3px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity: 0.4; transform: translateY(2px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes check {
+    from { transform: scale(0); }
+    to { transform: scale(1); }
   }
 }
 
-/* Reduced motion: strip everything to opacity-only. */
-@media (prefers-reduced-motion: reduce) {
-  *, ::before, ::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    transition-delay: 0s !important;
-  }
-}
-
-html {
+:root {
   color-scheme: light;
 }
 
+/* ---- Dark theme (attribute set by the inline head script) ---- */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-bg: #000000;
+  --color-surface: #1c1c1e;
+  --color-surface-2: #2c2c2e;
+  --color-surface-3: #3a3a3c;
+  --color-label: #ffffff;
+  --color-label-secondary: rgba(235, 235, 245, 0.6);
+  --color-label-tertiary: rgba(235, 235, 245, 0.3); /* disabled/decorative */
+  --color-placeholder: rgba(235, 235, 245, 0.55); /* input placeholders */
+  --color-separator: rgba(84, 84, 88, 0.65);
+  --color-accent: #0a84ff; /* text, icons, focus rings only */
+  --color-accent-fill: #0a6fd8; /* solid fills behind white labels */
+  --color-accent-hover: #0066d6;
+  --color-on-accent: #ffffff;
+  --color-danger: #ff453a;
+  --color-danger-hover: #d92217;
+  --color-on-danger: #000000; /* black label on filled danger */
+  --color-success: #30d158;
+  --color-on-success: #000000;
+}
+
 body {
-  min-height: 100vh;
   background-color: var(--color-bg);
-  color: var(--color-text);
+  color: var(--color-label);
   font-family: var(--font-sans);
-  font-size: 15px;
-  line-height: 1.5;
+  font-size: 16px;
+  line-height: 1.4;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -136,4 +133,20 @@ body {
 ::selection {
   background-color: var(--color-accent);
   color: var(--color-on-accent);
+}
+
+/* ---------- Focus ring (accent only) ---------- */
+.focus-ring:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Reduced motion: everything collapses to opacity. */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+  }
 }

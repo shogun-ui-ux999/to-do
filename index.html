@@ -8,11 +8,60 @@
       name="description"
       content="Tally keeps one honest list of what's next — ranked by what's due, protected by a five-second undo, and locked to your account alone."
     />
-    <meta name="theme-color" content="#f7f3ed" />
-    <link
-      rel="icon"
-      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23bf5529'/%3E%3Cpath d='M9 17l5 5 9-11' fill='none' stroke='%23fbf6ef' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"
-    />
+    <meta name="theme-color" content="#ffffff" />
+
+    <!-- Apple-mode: resolve the theme (and color-scheme) before any content
+         can paint so there is no flash, and let System follow the OS live.
+         Keep this in sync with src/lib/theme.ts. -->
+    <script>
+      (() => {
+        const STORAGE_KEY = "tally-theme";
+        const root = document.documentElement;
+        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)");
+
+        const readPreference = () => {
+          try {
+            const stored = window.localStorage.getItem(STORAGE_KEY);
+            return stored === "light" || stored === "dark" ? stored : "system";
+          } catch {
+            return "system";
+          }
+        };
+
+        const resolve = (preference) => {
+          if (preference === "light" || preference === "dark") {
+            return preference;
+          }
+          return prefersDark.matches ? "dark" : "light";
+        };
+
+        const apply = () => {
+          const theme = resolve(readPreference());
+          root.dataset.theme = theme;
+          root.style.colorScheme = theme;
+          const meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) {
+            meta.setAttribute("content", theme === "dark" ? "#000000" : "#ffffff");
+          }
+        };
+
+        apply();
+
+        // Follow the OS while the stored preference is System.
+        prefersDark.addEventListener("change", () => {
+          if (readPreference() === "system") {
+            apply();
+          }
+        });
+
+        // Another tab changed the preference.
+        window.addEventListener("storage", (event) => {
+          if (event.key === STORAGE_KEY) {
+            apply();
+          }
+        });
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

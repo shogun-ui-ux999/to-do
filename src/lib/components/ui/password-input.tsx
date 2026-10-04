@@ -17,7 +17,7 @@ export const PasswordInput = React.forwardRef<
       <input
         type={visible ? "text" : "password"}
         className={cn(
-          "h-10 w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-muted transition-shadow",
+          "h-10 w-full rounded-md border border-separator bg-surface px-3 py-2 text-sm text-label placeholder:text-placeholder transition-shadow",
           "focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent focus-visible:outline-none",
           showToggle ? "pr-10" : undefined,
           className
@@ -28,7 +28,7 @@ export const PasswordInput = React.forwardRef<
       {showToggle && (
         <button
           type="button"
-          className="absolute top-1/2 right-2 -translate-y-1/2 rounded text-muted transition-colors hover:text-text focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent focus-visible:outline-none"
+          className="absolute top-1/2 right-2 -translate-y-1/2 rounded text-label-secondary transition-colors hover:text-label focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent focus-visible:outline-none"
           aria-label={visible ? "Hide password" : "Show password"}
           tabIndex={-1}
           onClick={() => setVisible((v) => !v)}

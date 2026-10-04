@@ -67,6 +67,7 @@ export function SignUpForm() {
           placeholder="you@example.com"
           aria-invalid={error !== null}
           aria-describedby={error !== null ? "signup-error" : undefined}
+          className="rounded-10 px-4 text-sm"
         />
       </div>
 
@@ -81,8 +82,9 @@ export function SignUpForm() {
           aria-describedby={
             error !== null ? "signup-error" : "signup-password-hint"
           }
+          className="rounded-10 px-4 text-sm"
         />
-        <p id="signup-password-hint" className="text-xs text-muted">
+        <p id="signup-password-hint" className="text-xs text-label-tertiary">
           Use at least 8 characters.
         </p>
       </div>
@@ -98,6 +100,7 @@ export function SignUpForm() {
           aria-invalid={error !== null}
           aria-describedby={error !== null ? "signup-error" : undefined}
           showToggle={false}
+          className="rounded-10 px-4 text-sm"
         />
       </div>
 

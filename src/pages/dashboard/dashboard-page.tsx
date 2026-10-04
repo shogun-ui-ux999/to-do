@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
 import { useMutation, useQuery } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
-import { Check, CalendarDays, ChevronRight, Undo2 } from "lucide-react";
+import { Check, CalendarDays, Undo2 } from "lucide-react";
 import { api } from "~/convex/_generated/api";
 import type { Id } from "~/convex/_generated/dataModel";
 import { Button } from "~/lib/components/ui/button";
@@ -19,6 +19,7 @@ import { markIntentionalSignOut } from "~/components/require-auth";
 import { AddTaskForm } from "./add-task-form";
 import { WorkspaceErrorBoundary } from "./error-boundary";
 import { TaskRow } from "./task-row";
+import { ThemeSwitcher } from "../widgets/theme-switcher";
 
 interface PendingUndo {
   id: Id<"tasks">;
@@ -230,30 +231,33 @@ function Workspace() {
 
   return (
     <div className="min-h-screen bg-bg pb-24">
-      <header className="sticky top-0 z-20 border-b border-border bg-bg/85 backdrop-blur">
+      <header className="sticky top-0 z-20 border-b border-separator bg-bg/85 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-2xl items-center justify-between px-4">
           <Link
             to="/"
             className="flex items-center gap-2.5 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent focus-visible:outline-none"
           >
             <span
-              className="flex h-7 w-7 items-center justify-center rounded-md bg-accent text-on-accent shadow-sm"
+              className="flex h-7 w-7 items-center justify-center rounded-md bg-accent-fill text-on-accent"
               aria-hidden="true"
             >
               <Check className="h-3.5 w-3.5" strokeWidth={3} />
             </span>
-            <span className="font-display text-lg font-semibold tracking-tight tracking-tight">
+            <span className="font-display text-lg font-semibold tracking-tight">
               Tally
             </span>
           </Link>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleSignOut}
-            className="!rounded-sm"
-          >
-            Sign out
-          </Button>
+          <div className="flex items-center gap-2">
+            <ThemeSwitcher />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSignOut}
+              className="!rounded-sm"
+            >
+              Sign out
+            </Button>
+          </div>
         </div>
 
         <div className="mx-auto max-w-2xl px-4 pb-4">
@@ -267,14 +271,14 @@ function Workspace() {
             <h1 className="font-display text-2xl font-semibold tracking-tight">
               Your list
             </h1>
-            <p className="mt-0.5 text-xs text-muted">{todayString}</p>
+            <p className="mt-0.5 text-xs text-label-secondary">{todayString}</p>
           </div>
           {tasks === undefined ? (
-            <span className="text-xs text-muted" role="status">
+            <span className="text-xs text-label-tertiary" role="status">
               Loading…
             </span>
           ) : (
-            <p className="text-xs text-muted">
+            <p className="text-xs text-label-tertiary">
               {counts.active} active · {counts.completed} done
             </p>
           )}
@@ -284,30 +288,18 @@ function Workspace() {
           {FILTERS.map(({ key, label }) => {
             const selected = filter === key;
             return (
-              <span
-                key={key}
-                className="relative inline-block"
-                onMouseEnter={() => {}}
-              >
-                <button
-                  type="button"
-                  aria-pressed={selected}
+              <span key={key} className="relative inline-block">
+                <Button
+                  variant={selected ? "primary" : "secondary"}
+                  size="sm"
                   onClick={() => setFilter(key)}
-                  className={cn(
-                    "relative text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent focus-visible:outline-none",
-                    selected
-                      ? "text-text"
-                      : "text-muted hover:text-text"
-                  )}
+                  className="min-w-[64px] rounded-10 px-3 py-2 text-sm font-medium focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent focus-visible:outline-none"
                 >
                   {label}
-                  <span className="ml-1.5 tabular-nums opacity-60">
-                    {tasks === undefined ? "–" : counts[key]}
-                  </span>
-                </button>
-                {selected && (
-                  <span className="absolute -bottom-1.5 left-1/2 h-1.5 w-[10px] -translate-x-1/2 rounded-full bg-accent" />
-                )}
+                </Button>
+                <span className="ml-1.5 tabular-nums text-label-tertiary">
+                  {tasks === undefined ? "–" : counts[key]}
+                </span>
               </span>
             );
           })}
@@ -338,11 +330,11 @@ function Workspace() {
           aria-live="polite"
           className="fixed inset-x-0 bottom-5 z-30 flex justify-center px-4"
         >
-          <div className="w-full max-w-md overflow-hidden rounded-md border border-border bg-surface shadow-float animate-slide-up">
+          <div className="w-full max-w-md overflow-hidden rounded-10 border border-separator bg-surface shadow-10">
             <div className="flex items-center gap-3 px-4 py-3">
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium">Task deleted</p>
-                <p className="truncate text-xs text-muted">
+                <p className="truncate text-xs text-label-tertiary">
                   “{undo.title}” will be removed for good in {secondsLeft}s.
                 </p>
               </div>
@@ -406,9 +398,9 @@ function EmptyState({ filter }: { filter: TaskFilter }) {
           };
 
   return (
-    <div className="rounded-md border border-dashed border-border px-6 py-12 text-center">
+    <div className="rounded-10 border border-dashed border-separator px-6 py-12 text-center">
       <p className="font-display text-lg font-semibold">{copy.title}</p>
-      <p className="mx-auto mt-2 max-w-sm text-sm text-muted">{copy.body}</p>
+      <p className="mx-auto mt-2 max-w-sm text-sm text-label-tertiary">{copy.body}</p>
     </div>
   );
 }
