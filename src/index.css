@@ -1,5 +1,5 @@
 /* ==========================================================================
- * Tally — Apple-grade reskin
+ * Tally — Apple-grade reskin (light + dark)
  *
  * Black-forward, restrained, blue-accent-only. No warm tones, no serif
  * display type, no heavy shadows, no cards everywhere. Depth comes from
@@ -45,12 +45,19 @@
 
   /* ---- Motion ---- */
   --ease-spring: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* Scroll-driven and scroll-position animations */
   --animate-fade: fade 140ms var(--ease-spring) both;
   --animate-expand: expand 260ms var(--ease-spring) both;
   --animate-undo: fade-collapse 260ms var(--ease-spring) both;
   --animate-re-enter: re-enter 220ms var(--ease-spring) both;
   --animate-tab: tab-switch 200ms var(--ease-spring) both;
   --animate-check: check 220ms var(--ease-spring) both;
+  --animate-shimmer: shimmer 3200ms linear infinite;
+  --animate-slide-up: slide-up 520ms var(--ease-spring) both;
+  --animate-fade-in: fade-in 340ms var(--ease-spring) both;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-bounce-slow: bounce 2s ease-in-out infinite;
 
   @keyframes fade {
     from { opacity: 0; }
@@ -62,10 +69,7 @@
       opacity: 0;
       transform: translateY(8px) scale(0.97);
     }
-    to {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-    }
+    to { opacity: 1; transform: translateY(0) scale(1); }
   }
 
   @keyframes fade-collapse {
@@ -90,14 +94,45 @@
     from { transform: scale(0); }
     to { transform: scale(1); }
   }
+
+  @keyframes shimmer {
+    0% { background-position: -400% 0; }
+    100% { background-position: 400% 0; }
+  }
+
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(18px) scale(0.97);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  @keyframes bounce-slow {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
 }
 
-:root {
+::root {
   color-scheme: light;
 }
 
 /* ---- Dark theme (attribute set by the inline head script) ---- */
-:root[data-theme="dark"] {
+::root[data-theme="dark"] {
   color-scheme: dark;
 
   --color-bg: #000000;
