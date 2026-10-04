@@ -45,44 +45,50 @@ export function AddTaskForm({ onAdd }: AddTaskFormProps) {
 
   return (
     <form onSubmit={handleSubmit} noValidate>
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
-        <div className="min-w-0 flex-1">
-          <Label htmlFor="new-task-title" className="sr-only">
-            New task title
-          </Label>
-          <Input
-            id="new-task-title"
-            ref={titleInputRef}
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-            placeholder="Add a task…"
-            maxLength={200}
-            autoComplete="off"
-            aria-invalid={error !== null}
-            aria-describedby={error !== null ? "new-task-error" : undefined}
-          />
+      <div className="group">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+          <div className="min-w-0 flex-1">
+            <Label htmlFor="new-task-title" className="sr-only">
+              New task title
+            </Label>
+            <Input
+              id="new-task-title"
+              ref={titleInputRef}
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+              placeholder="Add a task…"
+              maxLength={200}
+              autoComplete="off"
+              aria-invalid={error !== null}
+              aria-describedby={error !== null ? "new-task-error" : undefined}
+            />
+          </div>
+          <div className="sm:w-44">
+            <Label htmlFor="new-task-due" className="sr-only">
+              Due date (optional)
+            </Label>
+            <Input
+              id="new-task-due"
+              type="date"
+              value={dueDate}
+              onChange={(event) => setDueDate(event.target.value)}
+            />
+          </div>
+          <Button type="submit" className="shrink-0">
+            <Plus className="mr-1.5 h-4 w-4" aria-hidden="true" />
+            Add
+          </Button>
         </div>
-        <div className="sm:w-44">
-          <Label htmlFor="new-task-due" className="sr-only">
-            Due date (optional)
-          </Label>
-          <Input
-            id="new-task-due"
-            type="date"
-            value={dueDate}
-            onChange={(event) => setDueDate(event.target.value)}
-          />
-        </div>
-        <Button type="submit" className="shrink-0">
-          <Plus className="mr-1.5 h-4 w-4" aria-hidden="true" />
-          Add
-        </Button>
+        {error !== null && (
+          <p
+            id="new-task-error"
+            role="alert"
+            className="mt-1.5 text-xs text-danger"
+          >
+            {error}
+          </p>
+        )}
       </div>
-      {error !== null && (
-        <p id="new-task-error" role="alert" className="mt-2 text-sm text-danger">
-          {error}
-        </p>
-      )}
     </form>
   );
 }

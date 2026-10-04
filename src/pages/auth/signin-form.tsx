@@ -40,12 +40,12 @@ export function SignInForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+    <form onSubmit={handleSubmit} className="space-y-5" noValidate>
       {error !== null && (
         <p
           id="signin-error"
           role="alert"
-          className="rounded-lg border border-danger/30 bg-danger/5 px-3.5 py-2.5 text-sm text-danger"
+          className="rounded-md border border-danger/30 bg-danger/5 px-3.5 py-2.5 text-sm text-danger"
         >
           {error}
         </p>

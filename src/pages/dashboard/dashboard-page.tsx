@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
 import { useMutation, useQuery } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
-import { Check, Undo2 } from "lucide-react";
+import { Check, CalendarDays, ChevronRight, Undo2 } from "lucide-react";
 import { api } from "~/convex/_generated/api";
 import type { Id } from "~/convex/_generated/dataModel";
 import { Button } from "~/lib/components/ui/button";
@@ -31,6 +31,16 @@ const FILTERS: { key: TaskFilter; label: string }[] = [
   { key: "active", label: "Active" },
   { key: "completed", label: "Completed" },
 ];
+
+function formatDate(year: number, month: number, day: number): string {
+  const date = new Date(Date.UTC(year, month, day));
+  const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const months = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+  ];
+  return `${weekdays[date.getUTCDay()]}, ${months[date.getUTCMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}`;
+}
 
 export function Dashboard() {
   return (
@@ -98,9 +108,7 @@ function Workspace() {
         {},
         sortTasks(
           current.map((task) =>
-            task._id === args.id
-              ? { ...task, completed: args.completed }
-              : task
+            task._id === args.id ? { ...task, completed: args.completed } : task
           )
         )
       );
@@ -155,6 +163,13 @@ function Workspace() {
     }
     return list;
   }, [tasks, filter]);
+
+  const today = new Date();
+  const todayString = formatDate(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate()
+  );
 
   const handleAdd = (title: string, dueDate: number | undefined) => {
     void createTask({ title, dueDate }).catch((error: unknown) => {
@@ -214,69 +229,86 @@ function Workspace() {
   const secondsLeft = Math.ceil(remaining / 1000);
 
   return (
-    <div className="min-h-screen bg-bg pb-28">
-      <header className="sticky top-0 z-20 border-b border-border/70 bg-bg/85 backdrop-blur">
+    <div className="min-h-screen bg-bg pb-24">
+      <header className="sticky top-0 z-20 border-b border-border bg-bg/85 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-2xl items-center justify-between px-4">
           <Link
             to="/"
-            className="flex items-center gap-2.5 rounded focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+            className="flex items-center gap-2.5 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent focus-visible:outline-none"
           >
             <span
-              className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent text-on-accent shadow-sm"
+              className="flex h-7 w-7 items-center justify-center rounded-md bg-accent text-on-accent shadow-sm"
               aria-hidden="true"
             >
               <Check className="h-3.5 w-3.5" strokeWidth={3} />
             </span>
-            <span className="font-display text-lg font-semibold tracking-tight">
+            <span className="font-display text-lg font-semibold tracking-tight tracking-tight">
               Tally
             </span>
           </Link>
-          <Button variant="ghost" size="sm" onClick={handleSignOut}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleSignOut}
+            className="!rounded-sm"
+          >
             Sign out
           </Button>
         </div>
+
         <div className="mx-auto max-w-2xl px-4 pb-4">
           <AddTaskForm onAdd={handleAdd} />
         </div>
       </header>
 
       <main className="mx-auto max-w-2xl px-4 pt-6">
-        <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h1 className="font-display text-2xl font-semibold tracking-tight">
-            Your list
-          </h1>
+        <div className="flex flex-wrap items-baseline justify-between gap-3">
+          <div>
+            <h1 className="font-display text-2xl font-semibold tracking-tight">
+              Your list
+            </h1>
+            <p className="mt-0.5 text-xs text-muted">{todayString}</p>
+          </div>
           {tasks === undefined ? (
-            <span className="text-sm text-muted" role="status">
+            <span className="text-xs text-muted" role="status">
               Loading…
             </span>
           ) : (
-            <p className="text-sm text-muted">
+            <p className="text-xs text-muted">
               {counts.active} active · {counts.completed} done
             </p>
           )}
         </div>
 
-        <div className="mt-5 mb-5 flex flex-wrap gap-2">
+        <div className="mt-5 mb-6 flex flex-wrap gap-5">
           {FILTERS.map(({ key, label }) => {
             const selected = filter === key;
             return (
-              <button
+              <span
                 key={key}
-                type="button"
-                aria-pressed={selected}
-                onClick={() => setFilter(key)}
-                className={cn(
-                  "rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none",
-                  selected
-                    ? "border-text bg-text text-bg"
-                    : "border-border bg-surface text-muted hover:border-text/30 hover:text-text"
-                )}
+                className="relative inline-block"
+                onMouseEnter={() => {}}
               >
-                {label}{" "}
-                <span className="tabular-nums opacity-70">
-                  {tasks === undefined ? "–" : counts[key]}
-                </span>
-              </button>
+                <button
+                  type="button"
+                  aria-pressed={selected}
+                  onClick={() => setFilter(key)}
+                  className={cn(
+                    "relative text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent focus-visible:outline-none",
+                    selected
+                      ? "text-text"
+                      : "text-muted hover:text-text"
+                  )}
+                >
+                  {label}
+                  <span className="ml-1.5 tabular-nums opacity-60">
+                    {tasks === undefined ? "–" : counts[key]}
+                  </span>
+                </button>
+                {selected && (
+                  <span className="absolute -bottom-1.5 left-1/2 h-1.5 w-[10px] -translate-x-1/2 rounded-full bg-accent" />
+                )}
+              </span>
             );
           })}
         </div>
@@ -286,7 +318,7 @@ function Workspace() {
         ) : visible.length === 0 ? (
           <EmptyState filter={filter} />
         ) : (
-          <ul className="space-y-2">
+          <ul className="space-y-0">
             {visible.map((task) => (
               <TaskRow
                 key={task._id}
@@ -304,9 +336,9 @@ function Workspace() {
         <div
           role="status"
           aria-live="polite"
-          className="fixed inset-x-0 bottom-6 z-30 flex justify-center px-4"
+          className="fixed inset-x-0 bottom-5 z-30 flex justify-center px-4"
         >
-          <div className="w-full max-w-md overflow-hidden rounded-xl border border-border bg-surface shadow-float animate-slide-in">
+          <div className="w-full max-w-md overflow-hidden rounded-md border border-border bg-surface shadow-float animate-slide-up">
             <div className="flex items-center gap-3 px-4 py-3">
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium">Task deleted</p>
@@ -321,7 +353,7 @@ function Workspace() {
             </div>
             <div className="h-1 bg-surface-2" aria-hidden="true">
               <div
-                className="h-full bg-accent transition-[width] duration-100 ease-linear"
+                className="h-full rounded-full bg-accent transition-[width] duration-100 ease-linear"
                 style={{ width: `${(remaining / UNDO_WINDOW_MS) * 100}%` }}
               />
             </div>
@@ -335,13 +367,13 @@ function Workspace() {
 function TaskSkeleton() {
   return (
     <div aria-hidden="true">
-      <ul className="space-y-2">
+      <ul className="space-y-0">
         {[0, 1, 2].map((index) => (
           <li
             key={index}
-            className="flex items-start gap-3 rounded-xl border border-border bg-surface p-3.5"
+            className="flex items-start gap-3 py-3"
           >
-            <span className="mt-0.5 h-5 w-5 shrink-0 animate-pulse rounded-[5px] bg-surface-2" />
+            <span className="mt-0.5 h-5 w-5 shrink-0 animate-pulse rounded-md bg-surface-2" />
             <span className="flex-1 space-y-2">
               <span className="block h-3.5 w-2/3 animate-pulse rounded bg-surface-2" />
               <span className="block h-3 w-24 animate-pulse rounded bg-surface-2" />
@@ -372,8 +404,9 @@ function EmptyState({ filter }: { filter: TaskFilter }) {
             title: "Nothing checked off yet",
             body: "Finished tasks collect here so you can see what you got done.",
           };
+
   return (
-    <div className="rounded-2xl border border-dashed border-border bg-surface/60 px-6 py-14 text-center">
+    <div className="rounded-md border border-dashed border-border px-6 py-12 text-center">
       <p className="font-display text-lg font-semibold">{copy.title}</p>
       <p className="mx-auto mt-2 max-w-sm text-sm text-muted">{copy.body}</p>
     </div>

@@ -16,17 +16,20 @@ export interface ButtonProps
 const sizeClasses: Record<ButtonSize, string> = {
   sm: "h-8 px-3 text-xs",
   default: "h-10 px-4 text-sm",
-  lg: "h-12 px-8 text-base",
-  icon: "h-9 w-9",
+  lg: "h-11 px-5 text-sm",
+  icon: "h-8 w-8",
 };
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = "primary", size = "default", asChild = false, ...props }, ref) => {
+  (
+    { className, variant = "primary", size = "default", asChild = false, ...props },
+    ref
+  ) => {
     const Comp = asChild ? Slot : "button";
     return (
       <Comp
         className={cn(
-          "inline-flex items-center justify-center whitespace-nowrap rounded-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]",
+          "inline-flex items-center justify-center whitespace-nowrap rounded-md font-medium transition-all select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]",
           buttonVariants[variant],
           sizeClasses[size],
           className
