@@ -38,7 +38,7 @@ export function AuthPage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-bg px-4">
         <div
-          className="h-6 w-6 animate-spin rounded-full border-2 border-border border-t-accent"
+          className="h-6 w-6 animate-spinner rounded-full border-2 border-border border-t-accent"
           role="status"
           aria-label="Checking your session"
         />
@@ -52,10 +52,10 @@ export function AuthPage() {
       <div className="flex flex-col px-4 py-8 sm:px-8">
         <Link
           to="/"
-          className="inline-flex w-fit items-center gap-2.5 rounded focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+          className="flex items-center gap-2.5 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent focus-visible:outline-none"
         >
           <span
-            className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-on-accent shadow-sm"
+            className="flex h-8 w-8 items-center justify-center rounded-md bg-accent text-on-accent"
             aria-hidden="true"
           >
             <Check className="h-4 w-4" strokeWidth={3} />
@@ -79,10 +79,10 @@ export function AuthPage() {
             {expired && (
               <p
                 role="status"
-                className="mt-5 rounded-lg border border-danger/30 bg-danger/5 px-3.5 py-2.5 text-sm text-danger"
+                className="mt-5 rounded-md border border-danger/30 bg-danger/5 px-3.5 py-2.5 text-sm text-danger"
               >
-                Your session expired, so we signed you out. Sign in again to
-                get back to your list.
+                Your session expired, so we signed you out. Sign in again to get
+                back to your list.
               </p>
             )}
 
@@ -97,7 +97,7 @@ export function AuthPage() {
                   <button
                     type="button"
                     onClick={() => switchMode("signup")}
-                    className="rounded font-medium text-accent underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+                    className="font-medium text-accent underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent focus-visible:outline-none"
                   >
                     Create an account
                   </button>
@@ -108,7 +108,7 @@ export function AuthPage() {
                   <button
                     type="button"
                     onClick={() => switchMode("signin")}
-                    className="rounded font-medium text-accent underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+                    className="font-medium text-accent underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent focus-visible:outline-none"
                   >
                     Sign in
                   </button>
@@ -121,11 +121,11 @@ export function AuthPage() {
 
       {/* Pitch side */}
       <aside className="hidden flex-col justify-between bg-text px-12 py-12 text-bg lg:flex">
-        <p className="text-xs font-medium tracking-widest text-bg/60 uppercase">
+        <p className="text-xs font-medium tracking-[0.14em] uppercase text-bg/60">
           Tally
         </p>
         <div>
-          <h2 className="font-display text-4xl leading-tight font-semibold">
+          <h2 className="font-display text-4xl leading-[1.05] font-semibold">
             A clear list is a clear head.
           </h2>
           <ul className="mt-8 space-y-4">

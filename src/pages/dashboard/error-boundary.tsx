@@ -14,7 +14,7 @@ function WorkspaceError({
   const { signOut } = useAuthActions();
   return (
     <div className="flex min-h-screen items-center justify-center bg-bg px-4">
-      <div className="w-full max-w-md rounded-2xl border border-border bg-surface p-6 text-center shadow-card">
+      <div className="w-full max-w-md rounded-md border border-border bg-surface p-6 text-center">
         <h1 className="font-display text-xl font-semibold">
           We couldn&apos;t load your list
         </h1>
@@ -23,13 +23,7 @@ function WorkspaceError({
         </p>
         <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
           <Button onClick={onRetry}>Try again</Button>
-          <Button
-            variant="ghost"
-            onClick={() => {
-              markIntentionalSignOut();
-              void signOut();
-            }}
-          >
+          <Button variant="ghost" onClick={() => { markIntentionalSignOut(); void signOut(); }}>
             Sign out
           </Button>
         </div>
