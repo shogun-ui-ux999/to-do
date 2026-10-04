@@ -62,6 +62,7 @@ export function SignInForm() {
           placeholder="you@example.com"
           aria-invalid={error !== null}
           aria-describedby={error !== null ? "signin-error" : undefined}
+          className="rounded-10 px-4 text-sm"
         />
       </div>
 
@@ -75,6 +76,7 @@ export function SignInForm() {
           placeholder="Your password"
           aria-invalid={error !== null}
           aria-describedby={error !== null ? "signin-error" : undefined}
+          className="rounded-10 px-4 text-sm"
         />
       </div>
 

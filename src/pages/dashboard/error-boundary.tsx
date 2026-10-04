@@ -14,20 +14,26 @@ function WorkspaceError({
   const { signOut } = useAuthActions();
   return (
     <div className="flex min-h-screen items-center justify-center bg-bg px-4">
-      <div className="w-full max-w-md rounded-md border border-border bg-surface p-6 text-center">
+      <div className="w-full max-w-md rounded-10 border border-separator bg-surface p-6 text-center">
         <h1 className="font-display text-xl font-semibold">
           We couldn&apos;t load your list
         </h1>
-        <p className="mt-2 text-sm text-muted">
+        <p className="mt-2 text-sm text-label-tertiary">
           {errorMessage(error, "Something went wrong on the way to the server.")}
         </p>
         <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
           <Button onClick={onRetry}>Try again</Button>
-          <Button variant="ghost" onClick={() => { markIntentionalSignOut(); void signOut(); }}>
+          <Button
+            variant="ghost"
+            onClick={() => {
+              markIntentionalSignOut();
+              void signOut();
+            }}
+          >
             Sign out
           </Button>
         </div>
-        <p className="mt-4 text-xs text-muted">
+        <p className="mt-4 text-xs text-label-tertiary">
           Your tasks are safe — this screen only means the last request failed.
         </p>
       </div>
@@ -43,10 +49,9 @@ interface WorkspaceErrorBoundaryState {
   error: Error | null;
 }
 
-/**
- * Catches render-time failures from reactive queries (Convex rethrows query
- * errors during render) and remounts the workspace when the user retries.
- */
+/** Catches render-time failures from reactive queries (Convex rethrows
+ * query errors during render) and remounts the workspace when the user
+ * retries. */
 export class WorkspaceErrorBoundary extends Component<
   WorkspaceErrorBoundaryProps,
   WorkspaceErrorBoundaryState

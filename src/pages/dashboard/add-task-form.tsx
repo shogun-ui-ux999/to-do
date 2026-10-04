@@ -61,6 +61,7 @@ export function AddTaskForm({ onAdd }: AddTaskFormProps) {
               autoComplete="off"
               aria-invalid={error !== null}
               aria-describedby={error !== null ? "new-task-error" : undefined}
+              className="rounded-10 px-4 text-sm"
             />
           </div>
           <div className="sm:w-44">
@@ -72,6 +73,7 @@ export function AddTaskForm({ onAdd }: AddTaskFormProps) {
               type="date"
               value={dueDate}
               onChange={(event) => setDueDate(event.target.value)}
+              className="rounded-10 px-3 text-sm"
             />
           </div>
           <Button type="submit" className="shrink-0">

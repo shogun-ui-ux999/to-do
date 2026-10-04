@@ -101,7 +101,7 @@ export function TaskRow({ task, onToggle, onSave, onDelete }: TaskRowProps) {
   }
 
   return (
-    <li className="flex items-start gap-3 py-4">
+    <li className="flex items-start gap-3 py-2">
       <Checkbox
         checked={task.completed}
         onCheckedChange={(checked) => onToggle(task, checked === true)}
@@ -117,7 +117,9 @@ export function TaskRow({ task, onToggle, onSave, onDelete }: TaskRowProps) {
         <p
           className={cn(
             "text-sm leading-6",
-            task.completed ? "text-muted line-through decoration-accent/40" : "text-text"
+            task.completed
+              ? "text-label-secondary line-through"
+              : "text-label"
           )}
         >
           {task.title}
@@ -126,7 +128,7 @@ export function TaskRow({ task, onToggle, onSave, onDelete }: TaskRowProps) {
           <p
             className={cn(
               "mt-0.5 flex flex-wrap items-center gap-1 text-xs",
-              due.overdue && !task.completed ? "text-danger" : "text-muted"
+              due.overdue && !task.completed ? "text-danger" : "text-label-tertiary"
             )}
           >
             <CalendarDays className="h-3.5 w-3.5" aria-hidden="true" />
@@ -147,7 +149,7 @@ export function TaskRow({ task, onToggle, onSave, onDelete }: TaskRowProps) {
           size="icon"
           aria-label={`Edit “${task.title}”`}
           onClick={startEditing}
-          className="rounded-md p-1.5 text-muted transition-colors hover:bg-surface-2 hover:text-text focus-visible:ring-inset focus-visible:ring-accent"
+          className="rounded-md p-1.5 text-label-tertiary transition-colors hover:bg-surface-2 hover:text-label focus-visible:ring-inset focus-visible:ring-accent"
         >
           <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
         </Button>
@@ -156,7 +158,7 @@ export function TaskRow({ task, onToggle, onSave, onDelete }: TaskRowProps) {
           size="icon"
           aria-label={`Delete “${task.title}”`}
           onClick={() => onDelete(task)}
-          className="rounded-md p-1.5 text-muted transition-colors hover:bg-surface-2 hover:text-danger focus-visible:ring-inset focus-visible:ring-accent"
+          className="rounded-md p-1.5 text-label-tertiary transition-colors hover:bg-surface-2 hover:text-danger focus-visible:ring-inset focus-visible:ring-accent"
         >
           <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
         </Button>

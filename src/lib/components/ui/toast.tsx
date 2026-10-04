@@ -10,15 +10,14 @@ export function Toaster() {
         duration: 4000,
         style: {
           background: "var(--color-surface)",
-          color: "var(--color-text)",
-          border: "1px solid var(--color-border)",
-          borderRadius: "var(--radius-sm)",
+          color: "var(--color-label)",
+          border: "1px solid var(--color-separator)",
+          borderRadius: "10px",
           padding: "10px 14px",
           fontFamily: "var(--font-sans)",
           fontSize: "0.875rem",
           maxWidth: "24rem",
-          boxShadow:
-            "0 2px 4px rgb(34 37 32 / 0.06), 0 18px 48px -24px rgb(34 37 32 / 0.4);",
+          boxShadow: "var(--shadow-10)",
         },
       }}
     />
