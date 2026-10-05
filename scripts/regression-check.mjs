@@ -19,6 +19,10 @@
 //   8. Convex speaks over a WebSocket. With that socket down a sign-in/up
 //      request never settles, so the forms now check the connection up front
 //      and fail fast instead of hanging until the watchdog fires.
+//   9. A build with no VITE_CONVEX_URL has no backend at all (127.0.0.1 is the
+//      visitor's own machine). Telling those people to “check your
+//      connection” blamed them for our deploy config, so the wording is now
+//      conditional on the backend actually being configured.
 
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -125,10 +129,40 @@ for (const form of ["src/pages/auth/signin-form.tsx", "src/pages/auth/signup-for
       source.includes("isWebSocketConnected")
   );
   check(
+    // The guard widened to `!backendConfigured || !isWebSocketConnected`; what
+    // matters is that nothing is submitted before it returns.
     `${form}: refuses to submit while offline (guard before submitting)`,
-    /if \(!isWebSocketConnected\) \{[\s\S]*?return;[\s\S]*?setSubmitting\(true\)/.test(
+    /if \(![A-Za-z]+ \|\| !isWebSocketConnected\) \{[\s\S]*?return;[\s\S]*?setSubmitting\(true\)/.test(
       source
     )
+  );
+}
+
+// ---- 9: unconfigured backend gets honest copy, not a blame-the-user one ----
+const convexConfig = read("src/lib/convex-config.ts");
+check(
+  "convex-config: isBackendConfigured() reports the unconfigured case",
+  convexConfig.includes("export function isBackendConfigured()") &&
+    /return \{ url: FALLBACK_URL, configured: false \}/.test(convexConfig)
+);
+check(
+  "convex: client is built from resolveConvexUrl (no window at import in the forms)",
+  /new ConvexReactClient\(resolveConvexUrl\(\)\.url\)/.test(read("src/lib/convex.ts"))
+);
+for (const form of ["src/pages/auth/signin-form.tsx", "src/pages/auth/signup-form.tsx"]) {
+  const source = read(form);
+  check(
+    `${form}: branches on backendConfigured before blaming the connection`,
+    /if \(!backendConfigured \|\| !isWebSocketConnected\) \{[\s\S]*?backendConfigured\s*\?/.test(
+      source
+    ) &&
+      source.includes(
+        'import { isBackendConfigured } from "~/lib/convex-config";'
+      )
+  );
+  check(
+    `${form}: says accounts are unavailable when unconfigured`,
+    source.includes("temporarily unavailable")
   );
 }
 
