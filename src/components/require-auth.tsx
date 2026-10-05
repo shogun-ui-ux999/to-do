@@ -12,6 +12,14 @@ export function markIntentionalSignOut() {
   intentionalSignOut = true;
 }
 
+/**
+ * Undo the mark, e.g. when a sign-out attempt fails and the user is still
+ * signed in — so a later genuine expiry is still reported as an expiry.
+ */
+export function clearIntentionalSignOut() {
+  intentionalSignOut = false;
+}
+
 function SessionLoading() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-bg px-4">

@@ -6,6 +6,7 @@ import {
   readThemePreference,
   systemTheme,
   writeThemePreference,
+  THEME_STORAGE_KEY,
   type ThemePreference,
 } from "~/lib/theme";
 
@@ -32,6 +33,18 @@ export function ThemeSwitcher() {
     media.addEventListener("change", onChange);
     return () => media.removeEventListener("change", onChange);
   }, [preference]);
+
+  // Another tab changed the stored preference: the head script already
+  // re-applies the palette, so just keep this control’s selection in sync.
+  useEffect(() => {
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === null || event.key === THEME_STORAGE_KEY) {
+        setPreference(readThemePreference());
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
 
   const select = (value: ThemePreference) => {
     if (value === preference) {

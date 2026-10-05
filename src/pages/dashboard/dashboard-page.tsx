@@ -15,7 +15,7 @@ import {
   type Task,
   type TaskFilter,
 } from "~/lib/tasks";
-import { markIntentionalSignOut } from "~/components/require-auth";
+import { markIntentionalSignOut, clearIntentionalSignOut } from "~/components/require-auth";
 import { AddTaskForm } from "./add-task-form";
 import { WorkspaceErrorBoundary } from "./error-boundary";
 import { TaskRow } from "./task-row";
@@ -57,6 +57,7 @@ function Workspace() {
 
   const [filter, setFilter] = useState<TaskFilter>("all");
   const [undo, setUndo] = useState<PendingUndo | null>(null);
+  const [restoring, setRestoring] = useState(false);
   const [now, setNow] = useState(() => Date.now());
 
   const createTask = useMutation(api.tasks.create).withOptimisticUpdate(
@@ -172,13 +173,19 @@ function Workspace() {
     today.getDate()
   );
 
-  const handleAdd = (title: string, dueDate: number | undefined) => {
-    void createTask({ title, dueDate }).catch((error: unknown) => {
-      toast.error(
-        `Couldn’t save “${title}” — ${errorMessage(error, "please try again.")}`
-      );
-    });
-  };
+  const handleAdd = (
+    title: string,
+    dueDate: number | undefined
+  ): Promise<boolean> =>
+    createTask({ title, dueDate }).then(
+      () => true,
+      (error: unknown) => {
+        toast.error(
+          `Couldn’t save “${title}” — ${errorMessage(error, "please try again.")}`
+        );
+        return false;
+      }
+    );
 
   const handleToggle = (task: Task, completed: boolean) => {
     void setCompleted({ id: task._id, completed }).catch((error: unknown) => {
@@ -188,18 +195,37 @@ function Workspace() {
     });
   };
 
-  const handleSave = (task: Task, title: string, dueDate: number | undefined) => {
-    void updateTask({ id: task._id, title, dueDate }).catch((error: unknown) => {
-      toast.error(
-        `Couldn’t save “${title}” — ${errorMessage(error, "please try again.")}`
-      );
-    });
-  };
+  const handleSave = (
+    task: Task,
+    title: string,
+    dueDate: number | undefined
+  ): Promise<boolean> =>
+    updateTask({ id: task._id, title, dueDate }).then(
+      () => true,
+      (error: unknown) => {
+        toast.error(
+          `Couldn’t save “${title}” — ${errorMessage(error, "please try again.")}`
+        );
+        return false;
+      }
+    );
 
   const handleDelete = (task: Task) => {
-    setUndo({ id: task._id, title: task.title, deadline: Date.now() + UNDO_WINDOW_MS });
+    const pending: PendingUndo = {
+      id: task._id,
+      title: task.title,
+      deadline: Date.now() + UNDO_WINDOW_MS,
+    };
+    // Start the countdown from the moment of this delete so a leftover clock
+    // from a previous banner can’t hide or over-extend this one.
+    setNow(Date.now());
+    setUndo(pending);
     void removeTask({ id: task._id }).catch((error: unknown) => {
-      setUndo(null);
+      // Only clear the banner if it still belongs to this delete — a newer
+      // delete’s banner must survive an older request failing late.
+      setUndo((current) =>
+        current !== null && current.id === pending.id ? null : current
+      );
       toast.error(
         `Couldn’t delete “${task.title}” — ${errorMessage(error, "please try again.")}`
       );
@@ -207,23 +233,49 @@ function Workspace() {
   };
 
   const handleUndo = () => {
-    if (undo === null) {
+    if (undo === null || restoring) {
       return;
     }
     const pending = undo;
-    setUndo(null);
+    setRestoring(true);
     void restoreTask({ id: pending.id })
-      .then(() => toast.success("Task restored"))
+      .then(() => {
+        // Only dismiss if the banner still belongs to this restore — a newer
+        // delete may have replaced it in the meantime.
+        setUndo((current) =>
+          current !== null && current.id === pending.id ? null : current
+        );
+        toast.success("Task restored");
+      })
       .catch((error: unknown) => {
+        // Put our banner back (only if nothing newer took its place) while
+        // the window is still open so the restore can be retried; once the
+        // deadline passes the countdown effect handles it like any banner.
+        setUndo((current) => {
+          if (current === null && Date.now() < pending.deadline) {
+            return pending;
+          }
+          return current;
+        });
         toast.error(
           `Couldn’t restore that task — ${errorMessage(error, "it may already have been removed.")}`
         );
-      });
+      })
+      .finally(() => setRestoring(false));
   };
 
   const handleSignOut = () => {
     markIntentionalSignOut();
-    void signOut().then(() => toast.success("Signed out"));
+    void signOut()
+      .then(() => toast.success("Signed out"))
+      .catch((error: unknown) => {
+        // The sign-out didn’t happen, so stop claiming it was intentional —
+        // otherwise a later real expiry would hide the expiry notice.
+        clearIntentionalSignOut();
+        toast.error(
+          `Couldn’t sign out — ${errorMessage(error, "please try again.")}`
+        );
+      });
   };
 
   const remaining = undo === null ? 0 : Math.max(0, undo.deadline - now);
@@ -338,7 +390,7 @@ function Workspace() {
                   “{undo.title}” will be removed for good in {secondsLeft}s.
                 </p>
               </div>
-              <Button size="sm" variant="secondary" onClick={handleUndo}>
+              <Button size="sm" variant="secondary" onClick={handleUndo} disabled={restoring}>
                 <Undo2 className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
                 Undo
               </Button>

@@ -14,12 +14,17 @@ import {
 interface TaskRowProps {
   task: Task;
   onToggle: (task: Task, completed: boolean) => void;
-  onSave: (task: Task, title: string, dueDate: number | undefined) => void;
+  onSave: (
+    task: Task,
+    title: string,
+    dueDate: number | undefined
+  ) => Promise<boolean>;
   onDelete: (task: Task) => void;
 }
 
 export function TaskRow({ task, onToggle, onSave, onDelete }: TaskRowProps) {
   const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [draftTitle, setDraftTitle] = useState(task.title);
   const [draftDue, setDraftDue] = useState(dateInputValue(task.dueDate));
   const [editError, setEditError] = useState<string | null>(null);
@@ -32,12 +37,17 @@ export function TaskRow({ task, onToggle, onSave, onDelete }: TaskRowProps) {
   };
 
   const cancelEditing = () => {
+    // Always allowed, even mid-save, so a pending save can never trap the
+    // user in the editor.
     setEditing(false);
     setEditError(null);
   };
 
-  const handleSave = (event: FormEvent<HTMLFormElement>) => {
+  const handleSave = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (saving) {
+      return;
+    }
     const trimmed = draftTitle.trim();
     if (trimmed.length === 0) {
       setEditError("A title is required.");
@@ -52,50 +62,71 @@ export function TaskRow({ task, onToggle, onSave, onDelete }: TaskRowProps) {
       setEditError("That due date isn’t a real date.");
       return;
     }
-    onSave(task, trimmed, due);
-    setEditing(false);
+    setSaving(true);
     setEditError(null);
+    let saved = false;
+    try {
+      saved = await onSave(task, trimmed, due);
+    } catch {
+      // Defensive: the dashboard reports the error; treat as a failed save.
+      saved = false;
+    } finally {
+      setSaving(false);
+    }
+    if (saved) {
+      setEditing(false);
+    } else {
+      // Keep the draft on screen so the edit isn't lost — the dashboard has
+      // already surfaced the underlying error in a toast.
+      setEditError("Couldn’t save — your changes are still here. Try again.");
+    }
   };
 
   const due = task.dueDate !== undefined ? describeDueDate(task.dueDate) : null;
 
   if (editing) {
     return (
-      <li className="flex items-start gap-2 py-3">
-        <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row">
-          <Input
-            value={draftTitle}
-            onChange={(event) => setDraftTitle(event.target.value)}
-            maxLength={200}
-            autoFocus
-            aria-label={`Title for “${task.title}”`}
-            onKeyDown={(event) => {
-              if (event.key === "Escape") {
-                cancelEditing();
-              }
-            }}
-          />
-          <Input
-            type="date"
-            value={draftDue}
-            onChange={(event) => setDraftDue(event.target.value)}
-            className="sm:w-44"
-            aria-label={`Due date for “${task.title}”`}
-          />
-        </div>
-        <div className="flex shrink-0 flex-wrap items-center gap-1.5">
-          <Button type="submit" size="sm">
-            Save
-          </Button>
-          <Button type="button" size="sm" variant="ghost" onClick={cancelEditing}>
-            Cancel
-          </Button>
-          {editError !== null && (
-            <p role="alert" className="text-xs text-danger">
-              {editError}
-            </p>
-          )}
-        </div>
+      <li className="py-3">
+        <form
+          onSubmit={handleSave}
+          noValidate
+          className="flex items-start gap-2"
+        >
+          <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row">
+            <Input
+              value={draftTitle}
+              onChange={(event) => setDraftTitle(event.target.value)}
+              maxLength={200}
+              autoFocus
+              aria-label={`Title for “${task.title}”`}
+              onKeyDown={(event) => {
+                if (event.key === "Escape") {
+                  cancelEditing();
+                }
+              }}
+            />
+            <Input
+              type="date"
+              value={draftDue}
+              onChange={(event) => setDraftDue(event.target.value)}
+              className="sm:w-44"
+              aria-label={`Due date for “${task.title}”`}
+            />
+          </div>
+          <div className="flex shrink-0 flex-wrap items-center gap-1.5">
+            <Button type="submit" size="sm" disabled={saving}>
+              {saving ? "Saving…" : "Save"}
+            </Button>
+            <Button type="button" size="sm" variant="ghost" onClick={cancelEditing}>
+              Cancel
+            </Button>
+            {editError !== null && (
+              <p role="alert" className="text-xs text-danger">
+                {editError}
+              </p>
+            )}
+          </div>
+        </form>
       </li>
     );
   }
