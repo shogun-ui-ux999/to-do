@@ -16,6 +16,9 @@
 //   7. The auth forms had no in-flight guard and no bounded recovery: if the
 //      request settled but the session never flipped, the disabled submit
 //      button trapped the user with no way back.
+//   8. Convex speaks over a WebSocket. With that socket down a sign-in/up
+//      request never settles, so the forms now check the connection up front
+//      and fail fast instead of hanging until the watchdog fires.
 
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -30,8 +33,10 @@ const check = (label, ok) => checks.push({ label, ok });
 // ---- 1 + 2: theme selectors and radius token ----
 const css = read("src/index.css");
 check(
+  // Anchored so `::root[data-theme=...]` — which browsers never match — can’t
+  // satisfy it by substring.
   "index.css: dark theme selector is :root[data-theme=\"dark\"]",
-  css.includes(':root[data-theme="dark"]')
+  /^\s*:root\[data-theme="dark"\]\s*\{/m.test(css)
 );
 check(
   "index.css: no invalid ::root selectors remain",
@@ -108,6 +113,22 @@ for (const form of ["src/pages/auth/signin-form.tsx", "src/pages/auth/signup-for
   check(
     `${form}: watchdog cleared when the request fails`,
     source.includes("window.clearTimeout(watchdog)")
+  );
+}
+
+// ---- 8: auth forms fail fast when the Convex socket is down ----
+for (const form of ["src/pages/auth/signin-form.tsx", "src/pages/auth/signup-form.tsx"]) {
+  const source = read(form);
+  check(
+    `${form}: reads the Convex connection state`,
+    source.includes("useConvexConnectionState") &&
+      source.includes("isWebSocketConnected")
+  );
+  check(
+    `${form}: refuses to submit while offline (guard before submitting)`,
+    /if \(!isWebSocketConnected\) \{[\s\S]*?return;[\s\S]*?setSubmitting\(true\)/.test(
+      source
+    )
   );
 }
 
