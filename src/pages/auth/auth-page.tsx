@@ -7,8 +7,13 @@ import { SignUpForm } from "./signup-form";
 import { ThemeSwitcher } from "../widgets/theme-switcher";
 
 /** Only allow same-site paths back, so a crafted link can't redirect off-site. */
-function safeReturnTo(value: string | null): string {
+export function safeReturnTo(value: string | null): string {
   if (value === null || !value.startsWith("/") || value.startsWith("//")) {
+    return "/app";
+  }
+  // Never bounce back to the auth page itself: an already-authenticated
+  // visitor would navigate to /auth and get stuck on the loading spinner.
+  if (value === "/auth" || value.startsWith("/auth?") || value.startsWith("/auth#")) {
     return "/app";
   }
   return value;

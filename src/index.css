@@ -41,6 +41,8 @@
     -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI",
     system-ui, Roboto, "Helvetica Neue", Arial, sans-serif;
   --radius-10: 10px;
+  --radius-20: 20px;
+  --radius-24: 24px;
   --shadow-10: 0 10px 32px -14px rgb(0 0 0 / 0.4);
 
   /* ---- Motion ---- */
@@ -127,12 +129,12 @@
   }
 }
 
-::root {
+:root {
   color-scheme: light;
 }
 
 /* ---- Dark theme (attribute set by the inline head script) ---- */
-::root[data-theme="dark"] {
+:root[data-theme="dark"] {
   color-scheme: dark;
 
   --color-bg: #000000;

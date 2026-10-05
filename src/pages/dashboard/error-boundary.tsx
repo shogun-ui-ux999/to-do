@@ -1,8 +1,12 @@
 import { Component, type ReactNode } from "react";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { Button } from "~/lib/components/ui/button";
+import { toast } from "~/lib/components/ui/toast";
 import { errorMessage } from "~/lib/errors";
-import { markIntentionalSignOut } from "~/components/require-auth";
+import {
+  markIntentionalSignOut,
+  clearIntentionalSignOut,
+} from "~/components/require-auth";
 
 function WorkspaceError({
   error,
@@ -27,7 +31,12 @@ function WorkspaceError({
             variant="ghost"
             onClick={() => {
               markIntentionalSignOut();
-              void signOut();
+              void signOut().catch((error: unknown) => {
+                clearIntentionalSignOut();
+                toast.error(
+                  `Couldn’t sign out — ${errorMessage(error, "please try again.")}`
+                );
+              });
             }}
           >
             Sign out

@@ -6,7 +6,7 @@ import { Label } from "~/lib/components/ui/label";
 import { timestampFromDateInput } from "~/lib/tasks";
 
 interface AddTaskFormProps {
-  onAdd: (title: string, dueDate: number | undefined) => void;
+  onAdd: (title: string, dueDate: number | undefined) => Promise<boolean>;
 }
 
 export function AddTaskForm({ onAdd }: AddTaskFormProps) {
@@ -14,9 +14,13 @@ export function AddTaskForm({ onAdd }: AddTaskFormProps) {
   const [title, setTitle] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (submitting) {
+      return;
+    }
     const trimmed = title.trim();
     if (trimmed.length === 0) {
       setError("Give the task a title first.");
@@ -27,20 +31,35 @@ export function AddTaskForm({ onAdd }: AddTaskFormProps) {
       setError("Titles must be 200 characters or fewer.");
       return;
     }
+    let parsed: number | undefined;
     if (dueDate.length > 0) {
-      const parsed = timestampFromDateInput(dueDate);
+      parsed = timestampFromDateInput(dueDate);
       if (parsed === undefined) {
         setError("That due date isn’t a real date.");
         return;
       }
-      onAdd(trimmed, parsed);
-    } else {
-      onAdd(trimmed, undefined);
     }
-    setError(null);
-    setTitle("");
-    setDueDate("");
-    titleInputRef.current?.focus();
+    setSubmitting(true);
+    let added = false;
+    try {
+      added = await onAdd(trimmed, parsed);
+    } catch {
+      // Defensive: the dashboard reports the error; treat as failed save.
+      added = false;
+    } finally {
+      setSubmitting(false);
+    }
+    if (added) {
+      setError(null);
+      setTitle("");
+      setDueDate("");
+      titleInputRef.current?.focus();
+    } else {
+      // Keep what the user typed so a failed save can simply be retried;
+      // the dashboard has already shown the reason in a toast.
+      setError("Couldn’t save that task — your text is still here. Try again.");
+      titleInputRef.current?.focus();
+    }
   };
 
   return (
@@ -76,9 +95,15 @@ export function AddTaskForm({ onAdd }: AddTaskFormProps) {
               className="rounded-10 px-3 text-sm"
             />
           </div>
-          <Button type="submit" className="shrink-0">
-            <Plus className="mr-1.5 h-4 w-4" aria-hidden="true" />
-            Add
+          <Button type="submit" className="shrink-0" disabled={submitting}>
+            {submitting ? (
+              "Adding…"
+            ) : (
+              <>
+                <Plus className="mr-1.5 h-4 w-4" aria-hidden="true" />
+                Add
+              </>
+            )}
           </Button>
         </div>
         {error !== null && (
