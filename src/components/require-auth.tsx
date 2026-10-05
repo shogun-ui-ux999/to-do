@@ -1,24 +1,10 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { Navigate, Outlet, useLocation } from "react-router";
 import { useConvexAuth } from "@convex-dev/auth/react";
 
-/*
- * Set right before the user chooses to sign out, so that leaving on purpose
- * is not reported back as an expired session.
- */
-let intentionalSignOut = false;
-
-export function markIntentionalSignOut() {
-  intentionalSignOut = true;
-}
-
-/**
- * Undo the mark, e.g. when a sign-out attempt fails and the user is still
- * signed in — so a later genuine expiry is still reported as an expiry.
- */
-export function clearIntentionalSignOut() {
-  intentionalSignOut = false;
-}
+const ALLOWED_RETURN_PATHS = new Set([
+  "/app",
+]);
 
 function SessionLoading() {
   return (
@@ -35,23 +21,16 @@ function SessionLoading() {
 export function RequireAuth() {
   const { isAuthenticated, isLoading } = useConvexAuth();
   const location = useLocation();
-  const sawSession = useRef(false);
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      sawSession.current = true;
-      intentionalSignOut = false;
-    }
-  }, [isAuthenticated]);
+  const wasSignedIn = useRef(false);
 
   if (isLoading) {
     return <SessionLoading />;
   }
 
   if (!isAuthenticated) {
-    const sessionExpired = sawSession.current && !intentionalSignOut;
+    const sessionExpired = wasSignedIn.current;
     const params = new URLSearchParams({
-      returnTo: location.pathname + location.search,
+      returnTo: "/app",
     });
     if (sessionExpired) {
       params.set("expired", "1");
@@ -59,6 +38,6 @@ export function RequireAuth() {
     return <Navigate to={`/auth?${params.toString()}`} replace />;
   }
 
-  sawSession.current = true;
+  wasSignedIn.current = true;
   return <Outlet />;
 }

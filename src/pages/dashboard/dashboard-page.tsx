@@ -15,7 +15,6 @@ import {
   type Task,
   type TaskFilter,
 } from "~/lib/tasks";
-import { markIntentionalSignOut, clearIntentionalSignOut } from "~/components/require-auth";
 import { AddTaskForm } from "./add-task-form";
 import { WorkspaceErrorBoundary } from "./error-boundary";
 import { TaskRow } from "./task-row";
@@ -265,13 +264,9 @@ function Workspace() {
   };
 
   const handleSignOut = () => {
-    markIntentionalSignOut();
     void signOut()
       .then(() => toast.success("Signed out"))
       .catch((error: unknown) => {
-        // The sign-out didn’t happen, so stop claiming it was intentional —
-        // otherwise a later real expiry would hide the expiry notice.
-        clearIntentionalSignOut();
         toast.error(
           `Couldn’t sign out — ${errorMessage(error, "please try again.")}`
         );

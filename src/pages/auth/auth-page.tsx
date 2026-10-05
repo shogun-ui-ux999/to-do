@@ -6,18 +6,25 @@ import { SignInForm } from "./signin-form";
 import { SignUpForm } from "./signup-form";
 import { ThemeSwitcher } from "../widgets/theme-switcher";
 
-/** Only allow same-site paths back, so a crafted link can't redirect off-site. */
+/**
+ * Only allow explicitly-whitelisted destinations back, so a crafted link
+ * cannot redirect off-site, and so the app never sends a freshly-signed-in
+ * user back into the auth page itself.
+ */
 export function safeReturnTo(value: string | null): string {
   if (value === null || !value.startsWith("/") || value.startsWith("//")) {
     return "/app";
   }
-  // Never bounce back to the auth page itself: an already-authenticated
-  // visitor would navigate to /auth and get stuck on the loading spinner.
-  if (value === "/auth" || value.startsWith("/auth?") || value.startsWith("/auth#")) {
+  const normalized = value.split("?")[0].split("#")[0];
+  if (!RETURN_PATH_WHITELIST.has(normalized)) {
     return "/app";
   }
   return value;
 }
+
+const RETURN_PATH_WHITELIST = new Set([
+  "/app",
+]);
 
 export function AuthPage() {
   const [searchParams, setSearchParams] = useSearchParams();
