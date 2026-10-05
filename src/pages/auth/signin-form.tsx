@@ -6,6 +6,7 @@ import { Input } from "~/lib/components/ui/input";
 import { Label } from "~/lib/components/ui/label";
 import { PasswordInput } from "~/lib/components/ui/password-input";
 import { authErrorMessage } from "~/lib/errors";
+import { isBackendConfigured } from "~/lib/convex-config";
 
 /** If the request settles but the session never flips, a permanently
  * disabled button would trap the user with no way back. After this long we
@@ -19,6 +20,7 @@ export function SignInForm() {
   // connection up front and say so immediately instead of leaving the user
   // staring at a disabled button.
   const { isWebSocketConnected } = useConvexConnectionState();
+  const backendConfigured = isBackendConfigured();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -39,9 +41,13 @@ export function SignInForm() {
       setError("Enter your password.");
       return;
     }
-    if (!isWebSocketConnected) {
+    if (!backendConfigured || !isWebSocketConnected) {
+      // “Check your connection” would be a lie when this build never had a
+      // backend to connect to — that one is ours to fix, not theirs.
       setError(
-        "We can’t reach the server right now, so we can’t check those details yet. Check your connection and try again."
+        backendConfigured
+          ? "We can’t reach the server right now, so we can’t check those details yet. Check your connection and try again."
+          : "Signing in is temporarily unavailable. Please try again later."
       );
       return;
     }
@@ -113,7 +119,12 @@ export function SignInForm() {
       <Button type="submit" size="lg" className="w-full" disabled={submitting}>
         {submitting ? "Signing in…" : "Sign in"}
       </Button>
-      {!isWebSocketConnected && !submitting && (
+      {!backendConfigured && !submitting && (
+        <p role="status" className="text-center text-xs text-label-tertiary">
+          Signing in is temporarily unavailable.
+        </p>
+      )}
+      {backendConfigured && !isWebSocketConnected && !submitting && (
         <p role="status" className="text-center text-xs text-label-tertiary">
           Connecting to the server…
         </p>

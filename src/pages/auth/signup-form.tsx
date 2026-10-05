@@ -6,6 +6,7 @@ import { Input } from "~/lib/components/ui/input";
 import { Label } from "~/lib/components/ui/label";
 import { PasswordInput } from "~/lib/components/ui/password-input";
 import { authErrorMessage } from "~/lib/errors";
+import { isBackendConfigured } from "~/lib/convex-config";
 
 /** If the request settles but the session never flips, a permanently
  * disabled button would trap the user with no way back. After this long we
@@ -19,6 +20,7 @@ export function SignUpForm() {
   // the connection up front and say so immediately rather than leaving the
   // user watching a disabled button for no reason.
   const { isWebSocketConnected } = useConvexConnectionState();
+  const backendConfigured = isBackendConfigured();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
@@ -44,9 +46,13 @@ export function SignUpForm() {
       setError("Those passwords don’t match.");
       return;
     }
-    if (!isWebSocketConnected) {
+    if (!backendConfigured || !isWebSocketConnected) {
+      // “Check your connection” would be a lie when this build never had a
+      // backend to connect to — that one is ours to fix, not theirs.
       setError(
-        "We can’t reach the server right now, so the account can’t be created yet. Check your connection and try again."
+        backendConfigured
+          ? "We can’t reach the server right now, so the account can’t be created yet. Check your connection and try again."
+          : "Creating accounts is temporarily unavailable. Please try again later."
       );
       return;
     }
@@ -137,7 +143,12 @@ export function SignUpForm() {
       <Button type="submit" size="lg" className="w-full" disabled={submitting}>
         {submitting ? "Creating account…" : "Create account"}
       </Button>
-      {!isWebSocketConnected && !submitting && (
+      {!backendConfigured && !submitting && (
+        <p role="status" className="text-center text-xs text-label-tertiary">
+          Creating accounts is temporarily unavailable.
+        </p>
+      )}
+      {backendConfigured && !isWebSocketConnected && !submitting && (
         <p role="status" className="text-center text-xs text-label-tertiary">
           Connecting to the server…
         </p>
