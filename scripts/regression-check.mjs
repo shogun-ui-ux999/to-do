@@ -11,6 +11,11 @@
 //   4. AddTaskForm had no in-flight guard against duplicate submits.
 //   5. safeReturnTo must never send an authenticated visitor back to /auth
 //      (stranded on the loading spinner forever).
+//   6. applyTheme left <meta name="theme-color"> untouched, so switching the
+//      theme in-app kept the old browser-chrome colour until a reload.
+//   7. The auth forms had no in-flight guard and no bounded recovery: if the
+//      request settled but the session never flipped, the disabled submit
+//      button trapped the user with no way back.
 
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -78,6 +83,31 @@ for (const [input, expected] of returnCases) {
   check(
     `safeReturnTo(${JSON.stringify(input)}) === ${JSON.stringify(expected)}`,
     actual === expected
+  );
+}
+
+// ---- 6: theme-color stays in sync when the theme is applied at runtime ----
+const theme = read("src/lib/theme.ts");
+check(
+  "theme: applyTheme updates <meta name=\"theme-color\">",
+  theme.includes('meta[name="theme-color"]') &&
+    /applyTheme[\s\S]*?applyThemeColor\(theme\)/.test(theme)
+);
+
+// ---- 7: auth form in-flight guard + bounded recovery ----
+for (const form of ["src/pages/auth/signin-form.tsx", "src/pages/auth/signup-form.tsx"]) {
+  const source = read(form);
+  check(
+    `${form}: duplicate submits guarded while pending`,
+    source.includes("if (submitting) {")
+  );
+  check(
+    `${form}: pending submit has a bounded watchdog (setTimeout)`,
+    /window\.setTimeout\([\s\S]*?setSubmitting\(false\)/.test(source)
+  );
+  check(
+    `${form}: watchdog cleared when the request fails`,
+    source.includes("window.clearTimeout(watchdog)")
   );
 }
 

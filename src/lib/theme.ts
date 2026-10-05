@@ -28,10 +28,21 @@ export function resolveTheme(preference: ThemePreference): ResolvedTheme {
   return preference === "system" ? systemTheme() : preference;
 }
 
+/** Keep the browser chrome (address bar / title bar) in step with the
+ * palette, exactly like the inline script in index.html does before paint.
+ * Without this, switching theme in-app left the old colour up until reload. */
+function applyThemeColor(theme: ResolvedTheme): void {
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta !== null) {
+    meta.setAttribute("content", theme === "dark" ? "#000000" : "#ffffff");
+  }
+}
+
 export function applyTheme(preference: ThemePreference): void {
   const theme = resolveTheme(preference);
   document.documentElement.dataset.theme = theme;
   document.documentElement.style.colorScheme = theme;
+  applyThemeColor(theme);
 }
 
 export function writeThemePreference(preference: ThemePreference): void {

@@ -6,6 +6,11 @@ import { Label } from "~/lib/components/ui/label";
 import { PasswordInput } from "~/lib/components/ui/password-input";
 import { authErrorMessage } from "~/lib/errors";
 
+/** If the request settles but the session never flips, a permanently
+ * disabled button would trap the user with no way back. After this long we
+ * re-enable the form and ask them to retry — bounded, and user-triggered. */
+const SIGN_UP_TIMEOUT_MS = 15_000;
+
 export function SignUpForm() {
   const { signIn } = useAuthActions();
   const [email, setEmail] = useState("");
@@ -16,6 +21,9 @@ export function SignUpForm() {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (submitting) {
+      return;
+    }
     setError(null);
     const normalizedEmail = email.trim().toLowerCase();
     if (!/^\S+@\S+\.\S+$/.test(normalizedEmail)) {
@@ -31,6 +39,15 @@ export function SignUpForm() {
       return;
     }
     setSubmitting(true);
+    // Deliberately not cleared on success: normally this component unmounts
+    // when the session flips, and if it never does the timer hands the form
+    // back instead of leaving it stuck.
+    const watchdog = window.setTimeout(() => {
+      setSubmitting(false);
+      setError(
+        "That took longer than expected. Check your connection and try again."
+      );
+    }, SIGN_UP_TIMEOUT_MS);
     try {
       await signIn("password", {
         email: normalizedEmail,
@@ -39,6 +56,7 @@ export function SignUpForm() {
       });
       // On success the auth page redirects to the requested destination.
     } catch (thrown) {
+      window.clearTimeout(watchdog);
       setError(authErrorMessage(thrown));
       setSubmitting(false);
     }

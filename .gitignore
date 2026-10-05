@@ -1,5 +1,6 @@
 node_modules/
 .convex/
 dist/
+isolate/
 tsconfig.tsbuildinfo
 .env.local
