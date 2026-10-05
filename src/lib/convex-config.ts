@@ -3,16 +3,21 @@
  *
  * Kept separate from `convex.ts` on purpose: that module constructs a client
  * at import time, which touches `window`. The auth forms only need to know
- * whether a backend was configured at all — a build with no VITE_CONVEX_URL
- * falls back to 127.0.0.1, which is the visitor's own machine and can never
- * reach us — so this module answers that question without side effects.
- *
- * Storage keys and the sandbox hostname shape must stay in sync with
- * resolveConvexUrl's callers.
+ * whether a backend was resolved at all — so this module answers that
+ * question without side effects.
  */
 
-/** Where a browser looks when nothing else is configured: its own machine. */
-const FALLBACK_URL = "http://127.0.0.1:3210";
+/**
+ * The Convex Cloud deployment this app talks to.
+ *
+ * A public endpoint — the browser has to contain it in plaintext anyway — and
+ * the default on purpose: Freebuff hosting builds the static site without
+ * injecting production env vars into the client bundle, so a
+ * VITE_CONVEX_URL-only build shipped with no backend at all and every account
+ * creation failed. Override it with VITE_CONVEX_URL to point somewhere else
+ * (a local `bun convex dev`, for instance).
+ */
+const DEPLOYED_BACKEND = "https://uncommon-spaniel-287.convex.cloud";
 
 export function resolveConvexUrl(): { url: string; configured: boolean } {
   const configured: unknown = import.meta.env.VITE_CONVEX_URL;
@@ -25,11 +30,11 @@ export function resolveConvexUrl(): { url: string; configured: boolean } {
   if (sandbox !== null) {
     return { url: `https://3210-${sandbox[2]}.e2b.app`, configured: true };
   }
-  return { url: FALLBACK_URL, configured: false };
+  return { url: DEPLOYED_BACKEND, configured: true };
 }
 
 /**
- * False when this build shipped without a reachable Convex deployment. When it
+ * False only when no URL can be resolved at all. When it
  * is false, telling someone to “check your connection” is blaming them for our
  * deploy configuration, so callers must not say that.
  */

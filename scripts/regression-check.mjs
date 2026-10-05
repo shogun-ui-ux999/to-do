@@ -19,10 +19,10 @@
 //   8. Convex speaks over a WebSocket. With that socket down a sign-in/up
 //      request never settles, so the forms now check the connection up front
 //      and fail fast instead of hanging until the watchdog fires.
-//   9. A build with no VITE_CONVEX_URL has no backend at all (127.0.0.1 is the
-//      visitor's own machine). Telling those people to “check your
-//      connection” blamed them for our deploy config, so the wording is now
-//      conditional on the backend actually being configured.
+//   9. Hosting does not inject VITE_CONVEX_URL into the client bundle, so the
+//      app fell back to 127.0.0.1 — the visitor's own machine — and account
+//      creation failed everywhere. The deployed Convex Cloud backend is now
+//      the default, and the forms still avoid blaming the visitor's connection.
 
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -138,12 +138,25 @@ for (const form of ["src/pages/auth/signin-form.tsx", "src/pages/auth/signup-for
   );
 }
 
-// ---- 9: unconfigured backend gets honest copy, not a blame-the-user one ----
+// ---- 9: the deployed backend must be the default, not a localhost fallback --
+// Hosting builds without injecting VITE_CONVEX_URL into the client bundle, so
+// a config-only app shipped with 127.0.0.1 — the visitor's own machine — and
+// every account creation failed.
 const convexConfig = read("src/lib/convex-config.ts");
 check(
-  "convex-config: isBackendConfigured() reports the unconfigured case",
-  convexConfig.includes("export function isBackendConfigured()") &&
-    /return \{ url: FALLBACK_URL, configured: false \}/.test(convexConfig)
+  "convex-config: defaults to the deployed Convex Cloud backend",
+  /const DEPLOYED_BACKEND = "https:\/\/[a-z0-9-]+\.convex\.cloud"/.test(
+    convexConfig
+  ) &&
+    convexConfig.includes("return { url: DEPLOYED_BACKEND, configured: true };")
+);
+check(
+  "convex-config: never falls back to the visitor's own 127.0.0.1",
+  !convexConfig.includes("127.0.0.1:3210")
+);
+check(
+  "convex-config: exports isBackendConfigured()",
+  convexConfig.includes("export function isBackendConfigured()")
 );
 check(
   "convex: client is built from resolveConvexUrl (no window at import in the forms)",
