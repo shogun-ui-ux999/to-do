@@ -129,12 +129,12 @@
   }
 }
 
-::root {
+:root {
   color-scheme: light;
 }
 
 /* ---- Dark theme (attribute set by the inline head script) ---- */
-::root[data-theme="dark"] {
+:root[data-theme="dark"] {
   color-scheme: dark;
 
   --color-bg: #000000;

@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { useConvexConnectionState } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { Button } from "~/lib/components/ui/button";
 import { Input } from "~/lib/components/ui/input";
@@ -13,6 +14,11 @@ const SIGN_IN_TIMEOUT_MS = 15_000;
 
 export function SignInForm() {
   const { signIn } = useAuthActions();
+  // Convex runs everything over a WebSocket. With that socket down a sign-in
+  // request never settles — it queues and retries silently — so check the
+  // connection up front and say so immediately instead of leaving the user
+  // staring at a disabled button.
+  const { isWebSocketConnected } = useConvexConnectionState();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -31,6 +37,12 @@ export function SignInForm() {
     }
     if (password.length === 0) {
       setError("Enter your password.");
+      return;
+    }
+    if (!isWebSocketConnected) {
+      setError(
+        "We can’t reach the server right now, so we can’t check those details yet. Check your connection and try again."
+      );
       return;
     }
     setSubmitting(true);
@@ -101,6 +113,11 @@ export function SignInForm() {
       <Button type="submit" size="lg" className="w-full" disabled={submitting}>
         {submitting ? "Signing in…" : "Sign in"}
       </Button>
+      {!isWebSocketConnected && !submitting && (
+        <p role="status" className="text-center text-xs text-label-tertiary">
+          Connecting to the server…
+        </p>
+      )}
     </form>
   );
 }
