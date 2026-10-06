@@ -1,11 +1,14 @@
 import { useRef } from "react";
-import { Navigate, Outlet, useLocation } from "react-router";
+import { Navigate, Outlet } from "react-router";
 import { useConvexAuth } from "@convex-dev/auth/react";
 
-const ALLOWED_RETURN_PATHS = new Set([
-  "/app",
-]);
-
+/**
+ * Always send signed-out traffic to /auth?returnTo=/app.
+ *
+ * The auth page itself owns the final allowlist via `safeReturnTo()`, so this
+ * component does not try to re-validate the destination here — it just picks
+ * the one destination the app currently treats as the post-auth home.
+ */
 function SessionLoading() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-bg px-4">
@@ -20,7 +23,6 @@ function SessionLoading() {
 
 export function RequireAuth() {
   const { isAuthenticated, isLoading } = useConvexAuth();
-  const location = useLocation();
   const wasSignedIn = useRef(false);
 
   if (isLoading) {
